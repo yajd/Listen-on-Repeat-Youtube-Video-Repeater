@@ -11,7 +11,7 @@ const self = {
 Cu.import('resource://gre/modules/Services.jsm');
 const ignoreFrames = false;
 const hostPattern = 'youtube.com'; //if a page load matches this host it will inject into it
-
+//check onStateChange for aRequest.name to have youtube.com in it and for STATE_STOP flag then addDiv
 function addDiv(theDoc) {
 	console.log('addDiv host = ' + theDoc.location.host);
 	if (!theDoc) { console.log('no doc!'); return; } //document not provided, it is undefined likely
@@ -56,19 +56,26 @@ function addDiv(theDoc) {
 	el_lor_span.childNodes[0].setAttribute('data-tooltip-text', 'Repeat at ListenOnRepeat.com');
 	el_lor_span.childNodes[0].removeAttribute('data-trigger-for');
 	el_lor_span.childNodes[0].setAttribute('onclick', 'window.location = window.location.href.replace(\'youtube.com\',\'listenonrepeat.com\')');
+	el_lor_span.childNodes[0].setAttribute('onmouseenter', 'this.style.opacity=1');
+	el_lor_span.childNodes[0].setAttribute('onmouseleave', 'this.style.opacity=\'\'');
 	el_lor_icon.style.background = 'url("' + self.path.chrome + 'icon.png") no-repeat scroll 0 0 transparent';
 	el_lor_icon.style.backgroundSize = '20px 20px';
 	el_lor_content.textContent = 'Repeat '
 	el_action_bar.insertBefore(el_lor_span, el_share_span.nextSibling);
+	
+	theDoc.documentElement.addEventListener('transitionend', ytMsgReceived, false);
 }
 
-function bingBtnEventListener(event) {
-	var win = event.view;
-	var doc = win.document;
-	event.stopPropagation();
-	event.preventDefault();
-	event.returnValue = false;
-	win.alert('you click on a bing logo! this is a function in the privelaged addon scope');
+function ytPopRecd(e) {
+	console.log('y pop received, e:', e);
+}
+
+function ytMsgReceived(e) {
+	console.log('yt transitionend received', 'e:', e);
+	if (e.propertyName === 'width' && e.target.id === 'progress') {
+		console.info('afterNavigate ready', 'e:', e);
+		addDiv(e.target.ownerDocument);
+	}
 }
 
 function removeDiv(theDoc, skipChecks) {
@@ -86,6 +93,7 @@ function removeDiv(theDoc, skipChecks) {
 	if (alreadyThere) {
 		//my stuff was found in the document so remove it
 		myDiv.parentNode.removeChild(myDiv);
+		theDoc.documentElement.removeEventListener('transitionend', ytMsgReceived, false);
 	} else {
 		//else its not there so no need to do anything
 	}
