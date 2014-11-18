@@ -14,8 +14,8 @@ const hostPattern = 'youtube.com'; //if a page load matches this host it will in
 //check onStateChange for aRequest.name to have youtube.com in it and for STATE_STOP flag then addDiv
 function addDiv(theDoc) {
 	console.log('addDiv host = ' + theDoc.location.host);
-	if (!theDoc) { console.log('no doc!'); return; } //document not provided, it is undefined likely
-	if(!(theDoc.location && theDoc.location.host.indexOf(hostPattern) > -1)) { console.log('location not match host:' + theDoc.location.host); return; }
+	if (!theDoc) { console.log('no doc!'); return false; } //document not provided, it is undefined likely
+	if(!(theDoc.location && theDoc.location.host.indexOf(hostPattern) > -1)) { console.log('location not match host:' + theDoc.location.host); return false; }
 	//if (!theDoc instanceof Ci.nsIDOMHTMLDocument) { console.log('not html doc'); return; } //not html document, so its likely an xul document //you probably dont need this check, checking host is enought
 	console.log('host pass');
 
@@ -63,7 +63,8 @@ function addDiv(theDoc) {
 	el_lor_content.textContent = 'Repeat '
 	el_action_bar.insertBefore(el_lor_span, el_share_span.nextSibling);
 	
-	theDoc.documentElement.addEventListener('transitionend', ytMsgReceived, false);
+	return true;
+	//theDoc.documentElement.addEventListener('transitionend', ytMsgReceived, false);
 }
 
 function ytPopRecd(e) {
@@ -93,10 +94,57 @@ function removeDiv(theDoc, skipChecks) {
 	if (alreadyThere) {
 		//my stuff was found in the document so remove it
 		myDiv.parentNode.removeChild(myDiv);
-		theDoc.documentElement.removeEventListener('transitionend', ytMsgReceived, false);
+		//theDoc.documentElement.removeEventListener('transitionend', ytMsgReceived, false);
 	} else {
 		//else its not there so no need to do anything
 	}
+}
+
+var progListener = {
+    onStateChange: function(aProgress, aRequest, aFlags, aStatus) {
+        var arrAFlags = [];
+        if (aFlags) {
+            for (var f in Ci.nsIWebProgressListener) {
+                if (aFlags & Ci.nsIWebProgressListener[f]) {
+                    arrAFlags.push(f);
+                }
+            }
+        }
+        //console.log('onStateChange', {aProgress: aProgress, aRequest: aRequest, aFlags:arrAFlags, aStatus: aStatus});
+		if (aFlags & Ci.nsIWebProgressListener.STATE_STOP) {
+			if (aRequest && aRequest.name.indexOf('youtube.com') > -1) {
+				var contentWindow = aProgress.DOMWindow.top;
+				console.log('contentWindow:', contentWindow);
+				if (contentWindow.frameElement) {
+					//its a frame
+					console.log('its a frame');
+					if (ignoreFrames) {
+						return;//dont want to watch frames
+					}
+				}
+				var t = 0; //try
+				var maxTry = 1;
+				var tryAddIt = function() {
+					contentWindow.setTimeout(function() {
+						var ret = addDiv(contentWindow.document);
+						if (ret) {
+							console.log('found and inserted');
+						} else {
+							t++;
+							if (t < maxTry) {
+								console.log('not found yet will wait and try again');
+								tryAddIt();
+							} else {
+								console.log('maxTry reached so determined this page does not have it');
+								console.info(contentWindow.location.href, contentWindow.document.documentElement.innerHTML);
+							}
+						}
+					}, 100);
+				}
+				tryAddIt();
+			}
+		}
+    }
 }
 
 function listenPageLoad(event) {
@@ -154,7 +202,7 @@ var windowListener = {
 			return;
 		}
 		if (aDOMWindow.gBrowser) {
-			aDOMWindow.gBrowser.addEventListener('DOMContentLoaded', listenPageLoad, false);
+			aDOMWindow.gBrowser.addProgressListener(progListener);
 			if (aDOMWindow.gBrowser.tabContainer) {
 				//has tabContainer
 				//start - go through all tabs in this window we just added to
@@ -180,7 +228,7 @@ var windowListener = {
 			return;
 		}
 		if (aDOMWindow.gBrowser) {
-			aDOMWindow.gBrowser.removeEventListener('DOMContentLoaded', listenPageLoad, false);
+			aDOMWindow.gBrowser.removeProgressListener(progListener);
 			if (aDOMWindow.gBrowser.tabContainer) {
 				//has tabContainer
 				//start - go through all tabs in this window we just added to
