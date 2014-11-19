@@ -14,19 +14,25 @@ const hostPattern = 'youtube.com'; //if a page load matches this host it will in
 //check onStateChange for aRequest.name to have youtube.com in it and for STATE_STOP flag then addDiv
 function addDiv(theDoc) {
 	console.log('addDiv host = ' + theDoc.location.host);
-	if (!theDoc) { console.log('no doc!'); return false; } //document not provided, it is undefined likely
+	if (!theDoc) { console.log('no doc!'); return 0; } //document not provided, it is undefined likely
 	if(!(theDoc.location && theDoc.location.host.indexOf(hostPattern) > -1)) { console.log('location not match host:' + theDoc.location.host); return false; }
 	//if (!theDoc instanceof Ci.nsIDOMHTMLDocument) { console.log('not html doc'); return; } //not html document, so its likely an xul document //you probably dont need this check, checking host is enought
-	console.log('host pass');
+	//console.log('host pass');
+
+	var alreadyThere = theDoc.getElementById(self.id + '.repeat');
+	if (alreadyThere) {
+		console.warn('alreadyThere');
+		return -1;
+	}
 
 	var el_action_bar = theDoc.getElementById('watch8-secondary-actions');
-	if (!el_action_bar) { console.warn('no action bar found'); return false; }
+	if (!el_action_bar) { console.warn('no action bar found'); return 0; }
 	
 	removeDiv(theDoc, true); //remove my div if it was already there, this is just a precaution
 	
 	//add your stuff here
 	var el_btn_contents = el_action_bar.getElementsByClassName('yt-uix-button-content');
-	if (!el_btn_contents) { console.warn('no buttons found'); return false; }
+	if (!el_btn_contents) { console.warn('no buttons found'); return 0; }
 
 	for (var i=0; i<el_btn_contents.length; i++) {
 	  if (el_btn_contents[i].textContent == 'Share ') {
@@ -34,7 +40,7 @@ function addDiv(theDoc) {
 		break;
 	  }
 	}
-	if (!el_share_btn_contents) { console.warn('no share button contents found'); return false; }
+	if (!el_share_btn_contents) { console.warn('no share button contents found'); return 0; }
 
 	var el_share_span = el_share_btn_contents;
 	for (var i=0; i<5; i++) {
@@ -44,7 +50,7 @@ function addDiv(theDoc) {
 		break;
 	  }
 	}
-	if (el_share_span.tagName != 'SPAN') { console.warn('no share button found'); return false; }
+	if (el_share_span.tagName != 'SPAN') { console.warn('no share button found'); return 0; }
 
 	console.log('FOUND:' + el_share_span.innerHTML);
 
@@ -63,7 +69,7 @@ function addDiv(theDoc) {
 	el_lor_content.textContent = 'Repeat '
 	el_action_bar.insertBefore(el_lor_span, el_share_span.nextSibling);
 	
-	return true;
+	return 1;
 	//theDoc.documentElement.addEventListener('transitionend', ytMsgReceived, false);
 }
 
@@ -174,6 +180,8 @@ var progListener = {
         }
         if (!aRequest && aFlags == 0) {
             notes.push('just a tab switch');
+            console.warn('just a tab switch so aborting');
+            return;
         }
         if (aFlags & Ci.nsIWebProgressListener.LOCATION_CHANGE_SAME_DOCUMENT) {
             notes.push('anchor clicked!');
@@ -183,7 +191,36 @@ var progListener = {
         if(!domDoc) {
             notes.push('document not loaded yet');
         }
-        console.log('onLocationChange', {aProgress: aProgress, aRequest: aRequest, aURI:aURI, aFlags:arrAFlags, notes:notes});
+	console.log('onLocationChange', {aProgress: aProgress, aRequest: aRequest, aURI:aURI, aFlags:arrAFlags, notes:notes});
+        if (domDoc) {
+	        if (aURI && /youtube\.com/i.test(aURI.spec)) {
+	        	var contentWindow = aProgress.DOMWindow
+			var t = 0; //try
+			var maxTry = 10;
+			var tryAddIt = function() {
+				contentWindow.setTimeout(function() {
+					var ret = addDiv(contentWindow.document);
+					if (ret === 1) {
+						console.log('found and inserted');
+					} else {
+						//returns 0 or false if not inserted
+						if (ret === -1) {
+							console.warn('not incrmenting t as ret === 0');
+							t++;
+						}
+						if (t < maxTry) {
+							console.log('not found yet will wait and try again');
+							tryAddIt();
+						} else {
+							console.log('maxTry reached so determined this page does not have it');
+							console.info(contentWindow.location.href, contentWindow.document.documentElement.innerHTML);
+						}
+					}
+				}, 100);
+			}
+			tryAddIt();
+	        }
+        }
     }
 }
 
