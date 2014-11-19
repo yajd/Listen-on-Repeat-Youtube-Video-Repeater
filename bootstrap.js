@@ -155,6 +155,9 @@ var progListener = {
     	try {
     		notes.push('aRequest.name:' + aRequest.name)
     	} catch(ignore) {}
+    	try {
+    		notes.push('aURI.spec:' + aURI.spec)
+    	} catch(ignore) {}
     	
     	if (aRequest && aRequest.name.indexOf('youtube.com') > -1) {
     		
