@@ -148,10 +148,18 @@ var progListener = {
     }
     */
     onLocationChange: function (aProgress, aRequest, aURI, aFlags) {
+        var notes = [];
+    	try {
+    		notes.push('aProgress.currentDocumentChannel.name:' + aProgress.currentDocumentChannel.name);
+    	} catch(ignore) {}
+    	try {
+    		notes.push('aRequest.name:' + aRequest.name)
+    	} catch(ignore) {}
+    	
     	if (aRequest && aRequest.name.indexOf('youtube.com') > -1) {
     		
     	} else {
-    		return;
+    		//return;
     	}
         var arrAFlags = [];
         if (aFlags) {
@@ -161,7 +169,6 @@ var progListener = {
                 }
             }
         }
-        var notes = [];
         if (!aRequest && aFlags == 0) {
             notes.push('just a tab switch');
         }
