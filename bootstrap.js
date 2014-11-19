@@ -101,6 +101,7 @@ function removeDiv(theDoc, skipChecks) {
 }
 
 var progListener = {
+/*
     onStateChange: function(aProgress, aRequest, aFlags, aStatus) {
         var arrAFlags = [];
         if (aFlags) {
@@ -144,6 +145,35 @@ var progListener = {
 				tryAddIt();
 			}
 		}
+    }
+    */
+    onLocationChange: function (aProgress, aRequest, aURI, aFlags) {
+    	if (aRequest && aRequest.name.indexOf('youtube.com') > -1) {
+    		
+    	} else {
+    		return;
+    	}
+        var arrAFlags = [];
+        if (aFlags) {
+            for (var f in Ci.nsIWebProgressListener) {
+                if (aFlags & Ci.nsIWebProgressListener[f]) {
+                    arrAFlags.push(f);
+                }
+            }
+        }
+        var notes = [];
+        if (!aRequest && aFlags == 0) {
+            notes.push('just a tab switch');
+        }
+        if (aFlags & Ci.nsIWebProgressListener.LOCATION_CHANGE_SAME_DOCUMENT) {
+            notes.push('anchor clicked!');
+        }
+        var domWin = aProgress.DOMWindow;
+        var domDoc = domWin.document;
+        if(!domDoc) {
+            notes.push('document not loaded yet');
+        }
+        console.log('onLocationChange', {aProgress: aProgress, aRequest: aRequest, aURI:aURI, aFlags:arrAFlags, notes:notes});
     }
 }
 
