@@ -156,11 +156,14 @@ var progListener = {
     }
     */
     onLocationChange: function (aProgress, aRequest, aURI, aFlags) {
-    	if (aProgress.chromeEventHandler) {
+    	var aDOMWindow = aProgress.chromeEventHandler;
+    	if (aDOMWindow) {
 	    	if (/youtube\.com.*?watch/i.test(aURI.spec) || /about\:customize/i.test(aURI.spec)) {
 	    		//show button
+	    		aDOMWindow.document.getElementById('loryvr_cui').setAttribute('loryvr_show');
 	    	} else {
 	    		//hide button
+	    		aDOMWindow.document.getElementById('loryvr_cui').removeAttribute('loryvr_show');
 	    	}
     	}
     	/*
@@ -421,7 +424,7 @@ function unloadFromContentWindowAndItsFrames(theWin) {
 function startup(aData, aReason) {
 	
 	CustomizableUI.createWidget(
-	  { id : 'loryvt_cui',
+	  { id : 'loryvr_cui',
 	    defaultArea : CustomizableUI.AREA_NAVBAR,
 	    label : 'Repeat Video',
 	    tooltiptext : 'Repeat at ListenOnRepeat.com',
@@ -436,7 +439,7 @@ function startup(aData, aReason) {
 
 function shutdown(aData, aReason) {
 	if (aReason == APP_SHUTDOWN) return;
-	CustomizableUI.destroyWidget('loryvt_cui');
+	CustomizableUI.destroyWidget('loryvr_cui');
 	windowListener.unregister();
 }
 
