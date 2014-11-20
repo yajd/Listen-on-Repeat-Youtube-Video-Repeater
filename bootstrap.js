@@ -164,7 +164,15 @@ var progListener = {
     	try {
     		notes.push('aURI.spec:' + aURI.spec)
     	} catch(ignore) {}
-    	
+    	try {
+    		notes.push({chromeEventHandler:aProgress.chromeEventHandler});
+    	} catch(ignore) {}
+    	try {
+    		notes.push({DOMWin:aProgress.DOMWindow});
+    	} catch(ignore) {}
+    	try {
+    		notes.push({pBar:aProgress.DOMWindow.getElementById('progress')});
+    	} catch(ignore) {}
     	if (aRequest && aRequest.name.indexOf('youtube.com') > -1) {
     		
     	} else {
@@ -180,8 +188,8 @@ var progListener = {
         }
         if (!aRequest && aFlags == 0) {
             notes.push('just a tab switch');
-            console.warn('just a tab switch so aborting');
-            return;
+            //console.warn('just a tab switch so aborting');
+            //return;
         }
         if (aFlags & Ci.nsIWebProgressListener.LOCATION_CHANGE_SAME_DOCUMENT) {
             notes.push('anchor clicked!');
@@ -192,9 +200,15 @@ var progListener = {
             notes.push('document not loaded yet');
         }
 	console.log('onLocationChange', {aProgress: aProgress, aRequest: aRequest, aURI:aURI, aFlags:arrAFlags, notes:notes});
+	/*
         if (domDoc) {
 	        if (aURI && /youtube\.com/i.test(aURI.spec)) {
 	        	var contentWindow = aProgress.DOMWindow
+	        	//check for progress bar
+	        	var pBar = contentWindow.document.getElementById('progress');
+	        	if (pBar) {
+	        		notes.push({'pBar is there':pBar});
+	        	}
 			var t = 0; //try
 			var maxTry = 10;
 			var tryAddIt = function() {
@@ -205,7 +219,8 @@ var progListener = {
 					} else {
 						//returns 0 or false if not inserted
 						if (ret === -1) {
-							console.warn('not incrmenting t as ret === 0');
+							console.warn('not incrmenting t as ret === -1');
+						} else {
 							t++;
 						}
 						if (t < maxTry) {
@@ -221,6 +236,7 @@ var progListener = {
 			tryAddIt();
 	        }
         }
+        */
     }
 }
 
