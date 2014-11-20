@@ -154,6 +154,14 @@ var progListener = {
     }
     */
     onLocationChange: function (aProgress, aRequest, aURI, aFlags) {
+    	if (aProgress.chromeEventHandler) {
+	    	if (/youtube\.com.*?watch/i.test(aURI.spec) || /about\:customize/i.test(aURI.spec)) {
+	    		//show button
+	    	} else {
+	    		//hide button
+	    	}
+    	}
+    	/*
         var notes = {};
     	try {
     		notes['aProgress.currentDocumentChannel.name'] = aProgress.currentDocumentChannel.name;
@@ -212,6 +220,7 @@ var progListener = {
             notes.docWarn = 'document not loaded yet';
         }
 	console.log('onLocationChange', {aProgress: aProgress, aRequest: aRequest, aURI:aURI, aFlags:arrAFlags, notes:notes});
+	*/
 	/*
         if (domDoc) {
 	        if (aURI && /youtube\.com/i.test(aURI.spec)) {
@@ -404,6 +413,18 @@ function unloadFromContentWindowAndItsFrames(theWin) {
 }
 
 function startup(aData, aReason) {
+	
+	CustomizableUI.createWidget(
+	  { id : self.id + '.cui',
+	    defaultArea : CustomizableUI.AREA_NAVBAR,
+	    label : "Repeat Video",
+	    tooltiptext : "Repeat at ListenOnRepeat.com",
+	    onCommand : function(aEvent) {
+	      let win = aEvent.target.ownerDocument.defaultView;
+	 	win.gBrowser.selectedTab.linkedBrowser.contentWindow.location = win.gBrowser.selectedTab.linkedBrowser.contentWindow.location.href.replace('youtube.com', 'listenonrepeat.com');
+	    }
+	  });
+	
 	windowListener.register();
 }
 
