@@ -1,5 +1,13 @@
 @-moz-document url("chrome://browser/content/browser.xul") {
+  #loryvr_cui:not([loryvr_show]) {
+    width: 0;
+  }
   #loryvr_cui {
-    list-style-image: url('chrome://listen-on-repeat-youtube-video-repeater/icon.png');
+    list-style-image: url("chrome://listen-on-repeat-youtube-video-repeater/content/icon16.png");
+  }
+
+  #loryvr_cui[cui-areatype="menu-panel"],
+  toolbarpaletteitem[place="palette"] > #loryvr_cui {
+    list-style-image: url("chrome://listen-on-repeat-youtube-video-repeater/content/icon32.png");
   }
 }
