@@ -156,14 +156,17 @@ var progListener = {
     }
     */
     onLocationChange: function (aProgress, aRequest, aURI, aFlags) {
-    	var aDOMWindow = aProgress.chromeEventHandler;
+    	var aDOMWindow = aProgress.chromeEventHandler.ownerDocument.defaultView;
+    	console.log('aDOMWindow', aDOMWindow);
     	if (aDOMWindow) {
+    		var cui = aDOMWindow.document.getElementById('loryvr_cui');
+    		console.log('cui:', cui);
 	    	if (/youtube\.com.*?watch/i.test(aURI.spec) || /about\:customize/i.test(aURI.spec)) {
 	    		//show button
-	    		aDOMWindow.document.getElementById('loryvr_cui').setAttribute('loryvr_show');
+	    		cui.setAttribute('loryvr_show', 'true');
 	    	} else {
 	    		//hide button
-	    		aDOMWindow.document.getElementById('loryvr_cui').removeAttribute('loryvr_show');
+	    		cui.removeAttribute('loryvr_show');
 	    	}
     	}
     	/*
@@ -322,23 +325,25 @@ var windowListener = {
 		}
 		if (aDOMWindow.gBrowser) {
 			var domWinUtils = aDOMWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
-			domWinUtils.loadSheet(self.path.chrome + 'cui.css', domWinUtils.AUTHOR_SHEET); //0 == agent_sheet 1 == user_sheet 2 == author_sheet
+			//domWinUtils.loadSheet(self.path.chrome + 'cui.css', domWinUtils.AUTHOR_SHEET); //0 == agent_sheet 1 == user_sheet 2 == author_sheet
 			aDOMWindow.gBrowser.addProgressListener(progListener);
 			if (aDOMWindow.gBrowser.tabContainer) {
 				//has tabContainer
 				//start - go through all tabs in this window we just added to
+				/*
 				var tabs = aDOMWindow.gBrowser.tabContainer.childNodes;
 				for (var i = 0; i < tabs.length; i++) {
 					console.log('DOING tab: ' + i);
 					var tabBrowser = tabs[i].linkedBrowser;
 					var win = tabBrowser.contentWindow;
-					loadIntoContentWindowAndItsFrames(win);
+					//loadIntoContentWindowAndItsFrames(win);
 				}
+				*/
 				//end - go through all tabs in this window we just added to
 			} else {
 				//does not have tabContainer
 				var win = aDOMWindow.gBrowser.contentWindow;
-				loadIntoContentWindowAndItsFrames(win);
+				//loadIntoContentWindowAndItsFrames(win);
 			}
 		} else {
 			//window does not have gBrowser
@@ -355,18 +360,20 @@ var windowListener = {
 			if (aDOMWindow.gBrowser.tabContainer) {
 				//has tabContainer
 				//start - go through all tabs in this window we just added to
+				/*
 				var tabs = aDOMWindow.gBrowser.tabContainer.childNodes;
 				for (var i = 0; i < tabs.length; i++) {
 					console.log('DOING tab: ' + i);
 					var tabBrowser = tabs[i].linkedBrowser;
 					var win = tabBrowser.contentWindow;
-					unloadFromContentWindowAndItsFrames(win);
+					//unloadFromContentWindowAndItsFrames(win);
 				}
+				*/
 				//end - go through all tabs in this window we just added to
 			} else {
 				//does not have tabContainer
 				var win = aDOMWindow.gBrowser.contentWindow;
-				unloadFromContentWindowAndItsFrames(win);
+				//unloadFromContentWindowAndItsFrames(win);
 			}
 		} else {
 			//window does not have gBrowser
