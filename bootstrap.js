@@ -11,6 +11,7 @@ const self = {
 Cu.import('resource://gre/modules/Services.jsm');
 Cu.import('resource:///modules/CustomizableUI.jsm');
 
+const uri_cuiCss =  Services.io.newURI(self.path.chrome + 'cui.css', null, null);
 const ignoreFrames = false;
 const hostPattern = 'youtube.com'; //if a page load matches this host it will inject into it
 //check onStateChange for aRequest.name to have youtube.com in it and for STATE_STOP flag then addDiv
@@ -325,7 +326,7 @@ var windowListener = {
 		}
 		if (aDOMWindow.gBrowser) {
 			var domWinUtils = aDOMWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
-			//domWinUtils.loadSheet(self.path.chrome + 'cui.css', domWinUtils.AUTHOR_SHEET); //0 == agent_sheet 1 == user_sheet 2 == author_sheet
+			domWinUtils.loadSheet(uri_cuiCss, domWinUtils.AUTHOR_SHEET); //0 == agent_sheet 1 == user_sheet 2 == author_sheet
 			aDOMWindow.gBrowser.addProgressListener(progListener);
 			if (aDOMWindow.gBrowser.tabContainer) {
 				//has tabContainer
@@ -355,7 +356,7 @@ var windowListener = {
 		}
 		if (aDOMWindow.gBrowser) {
 			var domWinUtils = aDOMWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
-			domWinUtils.removeSheet(self.path.chrome + 'cui.css', domWinUtils.AUTHOR_SHEET); //0 == agent_sheet 1 == user_sheet 2 == author_sheet
+			domWinUtils.removeSheet(uri_cuiCss, domWinUtils.AUTHOR_SHEET); //0 == agent_sheet 1 == user_sheet 2 == author_sheet
 			aDOMWindow.gBrowser.removeProgressListener(progListener);
 			if (aDOMWindow.gBrowser.tabContainer) {
 				//has tabContainer
