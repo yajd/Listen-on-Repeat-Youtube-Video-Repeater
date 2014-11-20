@@ -154,25 +154,37 @@ var progListener = {
     }
     */
     onLocationChange: function (aProgress, aRequest, aURI, aFlags) {
-        var notes = [];
+        var notes = {};
     	try {
-    		notes.push('aProgress.currentDocumentChannel.name:' + aProgress.currentDocumentChannel.name);
+    		notes['aProgress.currentDocumentChannel.name'] = aProgress.currentDocumentChannel.name;
     	} catch(ignore) {}
     	try {
-    		notes.push('aRequest.name:' + aRequest.name)
+    		notes['aRequest.name'] = aRequest.name;
     	} catch(ignore) {}
     	try {
-    		notes.push('aURI.spec:' + aURI.spec)
+    		notes['aURI.spec'] = aURI.spec;
     	} catch(ignore) {}
     	try {
-    		notes.push({chromeEventHandler:aProgress.chromeEventHandler});
+    		notes.chromeEventHandler = aProgress.chromeEventHandler;
     	} catch(ignore) {}
     	try {
-    		notes.push({DOMWin:aProgress.DOMWindow});
+    		notes.DOMWin = aProgress.DOMWindow;
     	} catch(ignore) {}
     	try {
-    		notes.push({pBar:aProgress.DOMWindow.getElementById('progress')});
+    		notes.pBar = aProgress.DOMWindow.document.getElementById('progress');
     	} catch(ignore) {}
+    	try {
+    		notes.pBarTop = aProgress.DOMWindow.top.document.getElementById('progress');
+    	} catch(ignore) {}
+    	try {
+    		notes.pBarChrome = aProgress.chromeEventHandler.contentDocument.getElementById('progress');
+    	} catch(ignore) {}
+    	try {
+    		notes.chromeEventHandler.ownerDocument.defaultView.setTimeout(function() {
+    			console.log({html:aProgress.chromeEventHandler.contentDocument.body.innerHTML})
+    		}, 50)
+    	} catch(ignore) {}
+    	
     	if (aRequest && aRequest.name.indexOf('youtube.com') > -1) {
     		
     	} else {
@@ -187,17 +199,17 @@ var progListener = {
             }
         }
         if (!aRequest && aFlags == 0) {
-            notes.push('just a tab switch');
+            notes.switch = 'just tab switch';
             //console.warn('just a tab switch so aborting');
             //return;
         }
         if (aFlags & Ci.nsIWebProgressListener.LOCATION_CHANGE_SAME_DOCUMENT) {
-            notes.push('anchor clicked!');
+            notes.anchor = 'anchor clicked!';
         }
         var domWin = aProgress.DOMWindow;
         var domDoc = domWin.document;
         if(!domDoc) {
-            notes.push('document not loaded yet');
+            notes.docWarn = 'document not loaded yet';
         }
 	console.log('onLocationChange', {aProgress: aProgress, aRequest: aRequest, aURI:aURI, aFlags:arrAFlags, notes:notes});
 	/*
