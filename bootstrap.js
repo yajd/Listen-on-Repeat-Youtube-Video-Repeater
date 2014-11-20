@@ -9,6 +9,8 @@ const self = {
 };
 
 Cu.import('resource://gre/modules/Services.jsm');
+Cu.import('resource:///modules/CustomizableUI.jsm');
+
 const ignoreFrames = false;
 const hostPattern = 'youtube.com'; //if a page load matches this host it will inject into it
 //check onStateChange for aRequest.name to have youtube.com in it and for STATE_STOP flag then addDiv
@@ -316,6 +318,8 @@ var windowListener = {
 			return;
 		}
 		if (aDOMWindow.gBrowser) {
+			var domWinUtils = aDOMWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
+			domWinUtils.loadSheet(self.path.chrome + 'cui.css', domWinUtils.AUTHOR_SHEET); //0 == agent_sheet 1 == user_sheet 2 == author_sheet
 			aDOMWindow.gBrowser.addProgressListener(progListener);
 			if (aDOMWindow.gBrowser.tabContainer) {
 				//has tabContainer
@@ -342,6 +346,8 @@ var windowListener = {
 			return;
 		}
 		if (aDOMWindow.gBrowser) {
+			var domWinUtils = aDOMWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
+			domWinUtils.removeSheet(self.path.chrome + 'cui.css', domWinUtils.AUTHOR_SHEET); //0 == agent_sheet 1 == user_sheet 2 == author_sheet
 			aDOMWindow.gBrowser.removeProgressListener(progListener);
 			if (aDOMWindow.gBrowser.tabContainer) {
 				//has tabContainer
@@ -415,10 +421,10 @@ function unloadFromContentWindowAndItsFrames(theWin) {
 function startup(aData, aReason) {
 	
 	CustomizableUI.createWidget(
-	  { id : self.id + '.cui',
+	  { id : 'loryvt_cui',
 	    defaultArea : CustomizableUI.AREA_NAVBAR,
-	    label : "Repeat Video",
-	    tooltiptext : "Repeat at ListenOnRepeat.com",
+	    label : 'Repeat Video',
+	    tooltiptext : 'Repeat at ListenOnRepeat.com',
 	    onCommand : function(aEvent) {
 	      let win = aEvent.target.ownerDocument.defaultView;
 	 	win.gBrowser.selectedTab.linkedBrowser.contentWindow.location = win.gBrowser.selectedTab.linkedBrowser.contentWindow.location.href.replace('youtube.com', 'listenonrepeat.com');
@@ -430,6 +436,7 @@ function startup(aData, aReason) {
 
 function shutdown(aData, aReason) {
 	if (aReason == APP_SHUTDOWN) return;
+	CustomizableUI.destroyWidget('loryvt_cui');
 	windowListener.unregister();
 }
 
